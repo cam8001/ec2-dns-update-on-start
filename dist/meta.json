@@ -1,0 +1,64 @@
+{
+  "inputs": {
+    "src/lambda/updateDnsRecord/index.ts": {
+      "bytes": 3308,
+      "imports": [
+        {
+          "path": "@aws-sdk/client-ec2",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@aws-sdk/client-dynamodb",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@aws-sdk/lib-dynamodb",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@aws-sdk/client-route-53",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/index.js": {
+      "imports": [
+        {
+          "path": "@aws-sdk/client-ec2",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "@aws-sdk/client-dynamodb",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "@aws-sdk/lib-dynamodb",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "@aws-sdk/client-route-53",
+          "kind": "require-call",
+          "external": true
+        }
+      ],
+      "exports": [],
+      "entryPoint": "src/lambda/updateDnsRecord/index.ts",
+      "inputs": {
+        "src/lambda/updateDnsRecord/index.ts": {
+          "bytesInOutput": 1795
+        }
+      },
+      "bytes": 2251
+    }
+  }
+}
