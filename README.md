@@ -2,9 +2,20 @@
 
 Automatically updates Route 53 DNS A records when EC2 instances start.
 
-## Architecture
+## TLDR Process Flow
 
-This solution monitors EC2 instance state changes in **eu-west-2** and automatically updates Route 53 DNS records when instances transition to the 'running' state.
+```mermaid
+flowchart TD
+    A[EC2 Instance Starts] -->|State: running| B@{ shape: procs, label: "EventBridge Rule" }
+    B -->|Triggers| C[Lambda Function]
+    C <-->|Query for instance_id, get domain + zone_id| D[(DynamoDB Table)]
+    C -->|Get public IP| E[EC2 API]
+    E -->|IP address| C
+    C -->|Create or Update Record| F[Route 53]
+    F -->|Updated| G[Domain points to new IP]
+```
+
+This solution monitors EC2 instance state changes spefically in **eu-west-2** (hardcoded for now for convenience) and automatically updates Route 53 DNS records when instances transition to the 'running' state.
 
 ### Components
 
@@ -55,7 +66,7 @@ The mapping table uses the following schema:
 
 ## Populating the DynamoDB Table
 
-After deployment, add your instance mappings to the DynamoDB table:
+After deployment, add your instance mappings to the DynamoDB table either with the `scripts/add-mapping.sh` script, or with the AWS CLI directly:
 
 ```bash
 aws dynamodb put-item \
@@ -76,7 +87,7 @@ Replace:
 
 ## Configuration
 
-- **DNS Record TTL**: Default is 300 seconds (5 minutes). Can be modified in the stack by changing the `RECORD_TTL` environment variable.
+- **DNS Record TTL**: Default is 60 seconds. Can be modified in the stack by changing the `RECORD_TTL` environment variable.
 
 ## How It Works
 
@@ -88,11 +99,10 @@ Replace:
 6. Lambda updates the Route 53 A record to point to the new IP address
 7. All actions are logged to CloudWatch Logs with X-Ray tracing enabled
 
-## Useful Commands
+## Utilities
 
-* `npm run build`   - Compile TypeScript to JavaScript
-* `npm run watch`   - Watch for changes and compile
-* `npm run test`    - Run Jest unit tests
-* `npx cdk deploy`  - Deploy this stack to AWS
-* `npx cdk diff`    - Compare deployed stack with current state
-* `npx cdk synth`   - Emit the synthesized CloudFormation template
+There is a bunch of stuff in the `./scripts` folder to make things a little easier:
+
+- `add-mapping.sh` adds a record to the ddb table
+- `analyze-bundle.sh` measures the size of the lambda function bundle. I had to explicitly exclude `@aws-sdk/*`, for which version 3 and above is automatically bundles with Node 20+ runtimes on AWS. This reduced the bundle size from 3.5mb to 2.2kb (lol)
+- `watch-dns.sh` monitors both public DNS and a Route53 record to check that updates have been applied and propagated (useful when testing an instance launch to ensure things are working)
